@@ -67,4 +67,4 @@ portfolio <- momentum_sign %>%
   mutate(portfolio = (investment-bond) * momentum_sign / sum(momentum_sign)) %>% 
   mutate(portfolio = ifelse(symbol == "us_treasury", bond, portfolio))
 
-write_csv(portfolio, "portfolio_201803.csv")
+write_csv(portfolio, "./portfolio/portfolio_201803.csv")
