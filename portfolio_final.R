@@ -60,7 +60,7 @@ momentum_sign <- momentum_score %>%
   group_by(symbol) %>% 
   summarise(momentum_sign = mean(momentum_sign))
 
-investment <- 6480000 - 300000
+investment <- 5000000
 bond <- investment * .3
 
 portfolio <- momentum_sign %>% 
