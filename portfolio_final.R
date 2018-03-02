@@ -1,12 +1,12 @@
 library(tqk)
 library(tidyquant)
 
-momentum_plus <- tqk_get(244620, from = "2017-01-01")
-lowvol_plus <- tqk_get(279540, from = "2017-01-01")
-us_treasury <- tqk_get(284430, from = "2017-01-01")
-value_plus <- tqk_get(244670, from = "2017-01-01")
-quality_plus <- tqk_get(244660, from = "2017-01-01")
-kosdaq_leverage <- tqk_get(233740, from = "2017-01-01")
+momentum_plus <- tqk_get(244620, from = "2017-02-01")
+lowvol_plus <- tqk_get(279540, from = "2017-02-01")
+us_treasury <- tqk_get(284430, from = "2017-02-01")
+value_plus <- tqk_get(244670, from = "2017-02-01")
+quality_plus <- tqk_get(244660, from = "2017-02-01")
+kosdaq_leverage <- tqk_get(233740, from = "2017-02-01")
 
 momentum_plus <- momentum_plus %>% 
   mutate(symbol = "momentum_plus")
@@ -20,10 +20,6 @@ quality_plus <- quality_plus %>%
   mutate(symbol = "quality_plus")
 kosdaq_leverage <- kosdaq_leverage %>% 
   mutate(symbol = "kosdaq_leverage")
-
-make_symbol <- function(df) {
-  mutate(df, symbol = deparse(substitute(df)))
-}
 
 etfs <- bind_rows(momentum_plus, lowvol_plus, us_treasury, value_plus, quality_plus, kosdaq_leverage)
 
@@ -43,7 +39,7 @@ etfs <- etfs %>%
                            ifelse(symbol == "us_treasury", 4, 12)))
 
 due_date <- etfs %>% 
-  filter(date == Sys.Date()-1) %>% 
+  filter(date == Sys.Date()-2) %>% 
   select(date, symbol, close)
 
 momentum_score <- etfs %>% 
@@ -60,11 +56,13 @@ momentum_sign <- momentum_score %>%
   group_by(symbol) %>% 
   summarise(momentum_sign = mean(momentum_sign))
 
-investment <- 5000000
+investment <- 6100000
 bond <- investment * .3
 
 portfolio <- momentum_sign %>% 
   mutate(portfolio = (investment-bond) * momentum_sign / sum(momentum_sign)) %>% 
   mutate(portfolio = ifelse(symbol == "us_treasury", bond, portfolio))
 
-write_csv(portfolio, "./portfolio/portfolio_201803.csv")
+write_csv(portfolio, str_c("./portfolio/portfolio_", Sys.Date(), ".csv"))
+
+          
