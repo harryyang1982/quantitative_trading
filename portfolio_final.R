@@ -1,12 +1,11 @@
 library(tqk)
 library(tidyquant)
 
-momentum_plus <- tqk_get(244620, from = "2017-02-01")
-lowvol_plus <- tqk_get(279540, from = "2017-02-01")
-us_treasury <- tqk_get(284430, from = "2017-02-01")
-value_plus <- tqk_get(244670, from = "2017-02-01")
-quality_plus <- tqk_get(244660, from = "2017-02-01")
-kosdaq_leverage <- tqk_get(233740, from = "2017-02-01")
+momentum_plus <- tqk_get(244620, from = "2017-05-01")
+lowvol_plus <- tqk_get(279540, from = "2017-05-01")
+us_treasury <- tqk_get(284430, from = "2017-05-01")
+value_plus <- tqk_get(244670, from = "2017-05-01")
+quality_plus <- tqk_get(244660, from = "2017-05-01")
 
 momentum_plus <- momentum_plus %>% 
   mutate(symbol = "momentum_plus")
@@ -18,10 +17,8 @@ value_plus <- value_plus %>%
   mutate(symbol = "value_plus")
 quality_plus <- quality_plus %>% 
   mutate(symbol = "quality_plus")
-kosdaq_leverage <- kosdaq_leverage %>% 
-  mutate(symbol = "kosdaq_leverage")
 
-etfs <- bind_rows(momentum_plus, lowvol_plus, us_treasury, value_plus, quality_plus, kosdaq_leverage)
+etfs <- bind_rows(momentum_plus, lowvol_plus, us_treasury, value_plus, quality_plus)
 
 etfs %>% 
   ggplot(aes(date, close, group = symbol)) +
@@ -35,7 +32,7 @@ year(etfs$date)
 
 etfs <- etfs %>% 
   mutate(year_month = str_c(year(etfs$date), month(etfs$date), sep = "-")) %>% 
-  mutate(duration = ifelse(symbol == "lowvol_plus", 6, 
+  mutate(duration = ifelse(symbol == "lowvol_plus", 7, 
                            ifelse(symbol == "us_treasury", 5, 12)))
 
 due_date <- etfs %>% 
@@ -43,7 +40,7 @@ due_date <- etfs %>%
   select(date, symbol, close)
 
 momentum_score <- etfs %>% 
-  filter(symbol != "kosdaq_leverage", date <= "2018-02-28") %>% 
+  filter(date <= "2018-04-30") %>% 
   group_by(year_month, symbol, duration) %>% 
   summarise(close = last(close)) %>% 
   arrange(year_month) %>% 
@@ -58,9 +55,11 @@ momentum_sign <- momentum_score %>%
 
 mean(momentum_sign$momentum_sign)
 
-investment <- 6200000
+investment <- 5917290
 # bond <- investment * (1 - mean(momentum_sign$momentum_sign))
-bond <- 1820000
+# bond <- investment * (1 - mean(momentum_sign$momentum_sign))
+
+bond <- 1829000
 
 portfolio <- momentum_sign %>% 
   filter(symbol != "us_treasury") %>% 
@@ -68,7 +67,6 @@ portfolio <- momentum_sign %>%
   mutate(portfolio = ifelse(symbol == "us_treasury", bond, portfolio))
   
 sum(portfolio$portfolio)  
-
 
 write_csv(portfolio, str_c("./portfolio/portfolio_", Sys.Date(), ".csv"))
 
